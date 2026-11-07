@@ -88,7 +88,10 @@ class Ledger:
         '''
         self.connection.commit()
         with self.connection.begin():
-        # insert the transaction
+            sql = text("LOCK TABLE balances IN ACCESS EXCLUSIVE MODE;")
+            logging.debug(sql)
+            self.connection.execute(sql)
+            # insert the transaction
             sql = text(f'INSERT INTO transactions (debit_account_id, credit_account_id, amount) VALUES ({debit_account_id}, {credit_account_id}, {amount});')
             logging.debug(sql)
             self.connection.execute(sql)
@@ -104,9 +107,6 @@ class Ledger:
             logging.debug(sql)
             self.connection.execute(sql)
 
-            # FIXME:
-            # you need to update the credit account balance as well
-            #  # update the credit account balance
             sql = text(f'SELECT balance FROM balances WHERE account_id = {credit_account_id};')
             logging.debug(sql)
             results = self.connection.execute(sql)
